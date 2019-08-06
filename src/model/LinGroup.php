@@ -94,13 +94,11 @@ class LinGroup extends Model
         $user = self::get($id,'auth');
 
         if (!$user){
-            throw new GroupException([
-                'error_code' => 30006,
-                'msg' => '分组删除失败'
-            ]);
+            $deleteGroup = self::destroy($id);
+        }else{
+            $deleteGroup = $user->together('auth')->delete();
         }
 
-        $deleteGroup = $user->together('auth')->delete();
         if(!$deleteGroup)
         {
             throw new GroupException([
