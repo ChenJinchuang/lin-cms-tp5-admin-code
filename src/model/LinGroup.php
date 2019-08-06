@@ -92,6 +92,14 @@ class LinGroup extends Model
     public static function deleteGroupAuth($id)
     {
         $user = self::get($id,'auth');
+
+        if (!$user){
+            throw new GroupException([
+                'error_code' => 30006,
+                'msg' => '分组删除失败'
+            ]);
+        }
+
         $deleteGroup = $user->together('auth')->delete();
         if(!$deleteGroup)
         {
