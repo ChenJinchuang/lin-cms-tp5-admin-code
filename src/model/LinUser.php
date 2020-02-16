@@ -249,6 +249,13 @@ class LinUser extends Model
             throw new UserException();
         }
 
+        $groupName = '';
+        if (!empty($user['group_id'])) {
+            $group = LinGroup::where('id', $user['group_id'])->field('name')->find();
+            $groupName = $group['name'];
+        }
+        $user['group_name'] = $groupName;
+
         $auths = LinAuth::getAuthByGroupID($user['group_id']);
 
         $auths = empty($auths) ? [] : split_modules($auths);
