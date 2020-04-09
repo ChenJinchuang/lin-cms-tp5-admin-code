@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\api\model;
+namespace LinCmsTp5\admin\model;
 
 
 use LinCmsTp5\admin\exception\user\UserException;
