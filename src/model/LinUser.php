@@ -198,38 +198,29 @@ class LinUser extends Model
         $user->save();
     }
 
-    /**
-     * @param $username
-     * @param $password
-     * @return array|\PDOStatement|string|\think\Model
-     * @throws UserException
-     */
-    public static function verify($username, $password)
+    public static function getPermissions($user)
     {
-        try {
-            $user = self::where('username', $username)->findOrFail();
-        } catch (Exception $ex) {
-            throw new UserException();
+        $userGroup = LinUserGroup::where('user_id', $user['id'])->select();
+        $groupIds = array_map(function ($item) {
+            return $item['group_id'];
+        }, $userGroup);
+        $root = LinGroup::where('name', 'root')->all($groupIds);
+
+        $permission = [];
+        if (!$root->isEmpty()) {
+            $user['admin'] = true;
+            $permission = LinPermission::all();
+        } else {
+            $user['admin'] = false;
+            $groupPermission = LinGroupPermission::where('group_id', 'IN', $groupIds)->select();
+            $permissionIds = array_unique(array_map(function ($item) {
+                return $item['permission_id'];
+            }, $groupPermission));
+
+            $permission = LinPermission::all($permissionIds);
         }
 
-        if (!$user->active) {
-            throw new UserException([
-                'code' => 400,
-                'msg' => '账户已被禁用，请联系管理员',
-                'error_code' => 10070
-            ]);
-        }
-
-        if (!self::checkPassword($user->password, $password)) {
-            throw new UserException([
-                'code' => 400,
-                'msg' => '密码错误，请重新输入',
-                'error_code' => 10030
-            ]);
-        }
-
-        return $user->hidden(['password']);
-
+        dump($permission);
     }
 
     /**
@@ -240,36 +231,30 @@ class LinUser extends Model
      * @throws \think\exception\DbException
      * @throws UserException
      */
-    public static function getUserByUID($uid)
-    {
-        try {
-            $user = self::field('password', true)
-                ->findOrFail($uid)->toArray();
-        } catch (Exception $ex) {
-            throw new UserException();
-        }
-
-        $groupName = '';
-        if (!empty($user['group_id'])) {
-            $group = LinGroup::where('id', $user['group_id'])->field('name')->find();
-            $groupName = $group['name'];
-        }
-        $user['group_name'] = $groupName;
-
-        $auths = LinAuth::getAuthByGroupID($user['group_id']);
-
-        $auths = empty($auths) ? [] : split_modules($auths);
-
-        $user['auths'] = $auths;
-
-        return $user;
-    }
-
-
-    private static function checkPassword($md5Password, $password)
-    {
-        return $md5Password === md5($password);
-    }
+    // public static function getUserByUID($uid)
+    // {
+    //     try {
+    //         $user = self::field('password', true)
+    //             ->findOrFail($uid)->toArray();
+    //     } catch (Exception $ex) {
+    //         throw new UserException();
+    //     }
+    //
+    //     $groupName = '';
+    //     if (!empty($user['group_id'])) {
+    //         $group = LinGroup::where('id', $user['group_id'])->field('name')->find();
+    //         $groupName = $group['name'];
+    //     }
+    //     $user['group_name'] = $groupName;
+    //
+    //     $auths = LinAuth::getAuthByGroupID($user['group_id']);
+    //
+    //     $auths = empty($auths) ? [] : split_modules($auths);
+    //
+    //     $user['auths'] = $auths;
+    //
+    //     return $user;
+    // }
 
     function getAvatarAttr($value)
     {

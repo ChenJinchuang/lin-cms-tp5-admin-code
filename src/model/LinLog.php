@@ -14,8 +14,6 @@ use think\facade\Request;
 
 class LinLog extends Model
 {
-    protected $createTime = 'time';
-    protected $updateTime = false;
     protected $autoWriteTimestamp = 'datetime';
 
     /**
