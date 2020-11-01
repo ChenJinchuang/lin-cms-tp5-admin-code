@@ -15,6 +15,6 @@
   "require": {
     "php": ">=7.1.0",
     "topthink/framework": "5.1.*",
-    "lin-cms-tp5/base-core": "dev-master"
+    "lin-cms-tp5/base-core": "0.2.0"
   }
 }
