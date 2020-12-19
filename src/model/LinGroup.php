@@ -92,7 +92,13 @@ class LinGroup extends Model
     public static function deleteGroupAuth($id)
     {
         $user = self::get($id,'auth');
-        $deleteGroup = $user->together('auth')->delete();
+
+        if (!$user){
+            $deleteGroup = self::destroy($id);
+        }else{
+            $deleteGroup = $user->together('auth')->delete();
+        }
+
         if(!$deleteGroup)
         {
             throw new GroupException([
